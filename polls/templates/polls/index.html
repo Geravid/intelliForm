@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Form</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Form styling */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input, textarea, select {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Error message styles */
+        .error {
+            color: #d9534f;
+            font-size: 12px;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 20px;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Submit Your Information</h1>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <label for="presenter">Presenter:</label>
+            <input type="text" id="presenter" name="presenter" value="{{ form.presenter.value }}" required>
+            {% if form.presenter.errors %}
+                <div class="error">{{ form.presenter.errors }}</div>
+            {% endif %}
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ form.email.value }}" required>
+            {% if form.email.errors %}
+                <div class="error">{{ form.email.errors }}</div>
+            {% endif %}
+            
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" value="{{ form.title.value }}" required>
+            {% if form.title.errors %}
+                <div class="error">{{ form.title.errors }}</div>
+            {% endif %}
+            
+            <!--
+            <label for="authors">Authors:</label>
+            <input type="text" id="authors" name="authors" value="{{ form.authors.value }}" required>
+            {% if form.authors.errors %}
+                <div class="error">{{ form.authors.errors }}</div>
+            {% endif %}
+            -->
+            {% csrf_token %}
+            <div id="authorsList">
+                {% for form in formset %}
+                <div class="author-container">
+                    <label for="{{ form.name.id_for_label }}">Author {{ forloop.counter }}:</label>
+                    {{ form.name }}
+                    {{ form.is_principal }}
+                    <label for="{{ form.is_principal.id_for_label }}">Principal Author</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="btn-container">
+                <button type="button" id="addAuthorBtn">Add Another Author</button>
+            </div>
+            
+            <label for="institute">Institute:</label>
+            <input type="text" id="institute" name="institute" value="{{ form.institute.value }}" required>
+            {% if form.institute.errors %}
+                <div class="error">{{ form.institute.errors }}</div>
+            {% endif %}
+            
+            <label for="resume">Resume:</label>
+            <textarea id="resume" name="resume" required>{{ form.resume.value }}</textarea>
+            {% if form.resume.errors %}
+                <div class="error">{{ form.resume.errors }}</div>
+            {% endif %}
+            
+            <label for="key-words">Key Words (minimum five and separated with commas):</label>
+            <input type="text" id="key-words" name="key_words" value="{{ form.key_words.value }}" required>
+            {% if form.key_words.errors %}
+                <div class="error">{{ form.key_words.errors }}</div>
+            {% endif %}
+            
+            <label for="modality">Modality:</label>
+            {{ form.modality }}
+            {% if form.modality.errors %}
+                <div class="error">{{ form.modality.errors }}</div>
+            {% endif %}
+            
+            <label for="group">Group:</label>
+            {{ form.group }}
+            {% if form.group.errors %}
+                <div class="error">{{ form.group.errors }}</div>
+            {% endif %}
+            
+            
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <script>
+        let authorCount = {{ formset.management_form.TOTAL_FORMS.value|default:0 }};
+
+        document.getElementById("addAuthorBtn").addEventListener("click", function() {
+            authorCount++;
+
+            const newAuthorDiv = document.createElement("div");
+            newAuthorDiv.classList.add("author-container");
+
+            const label = document.createElement("label");
+            label.textContent = `Author ${authorCount}:`;
+
+            const inputName = document.createElement("input");
+            inputName.type = "text";
+            inputName.name = `form-${authorCount}-name`;
+            inputName.required = true;
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = `form-${authorCount}-is_principal`;
+
+            const checkboxLabel = document.createElement("label");
+            checkboxLabel.textContent = "Principal Author";
+
+            newAuthorDiv.appendChild(label);
+            newAuthorDiv.appendChild(inputName);
+            newAuthorDiv.appendChild(checkbox);
+            newAuthorDiv.appendChild(checkboxLabel);
+
+            document.getElementById("authorsList").appendChild(newAuthorDiv);
+
+            // Update the total forms in the management form
+            document.getElementById("id_form-TOTAL_FORMS").value = authorCount + 1;
+        });
+    </script>
+</body>
+</html>
